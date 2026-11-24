@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { moveFader,stopFade } from "../services/crossfade";
 import { deckPlayerRegistry } from "../services/deckPlayerRegistry";
 import { useDjStore } from "../store/djStore";
 import { triggerSlot, usePreferences, holdFavorite, releaseFavorite, international } from "../store/performance";
@@ -39,7 +40,7 @@ export function useKeyboardShortcuts() {
         return;
       }
 
-      const { activeDeckId, mixer, updateMixer } = useDjStore.getState();
+      const { activeDeckId, mixer } = useDjStore.getState();
       const seekAmount = event.shiftKey ? 5 : event.altKey ? 0.25 : 1;
 
       if (event.key === "ArrowLeft") {
@@ -81,23 +82,21 @@ export function useKeyboardShortcuts() {
         else { held.set(event.code || event.key,id); triggerSlot(id,1,true); }
         return;
       }
-      const {decks}=useDjStore.getState();
-      if(decks.A.source==="youtube" || decks.B.source==="youtube")return;
       if (key === "q") {
         event.preventDefault();
-        updateMixer({ crossfader: Math.max(0, mixer.crossfader - 5) });
+        moveFader(Math.max(0, mixer.crossfader - 5));
         return;
       }
 
       if (key === "w") {
         event.preventDefault();
-        updateMixer({ crossfader: 50 });
+        moveFader(50);
         return;
       }
 
       if (key === "a") {
         event.preventDefault();
-        updateMixer({ crossfader: Math.min(100, mixer.crossfader + 5) });
+        moveFader(Math.min(100, mixer.crossfader + 5));
       }
     };
 
@@ -106,6 +105,7 @@ export function useKeyboardShortcuts() {
     window.addEventListener("blur",releaseAll);
     document.addEventListener("visibilitychange",visibility);
     return () => {
+      stopFade();
       releaseAll();
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup",release);

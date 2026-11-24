@@ -79,23 +79,34 @@ app.whenReady().then(async()=>{
     for(const result of [both,mobile,after])assert(result.hall>dry.hall+.0001&&result.echo>hall.echo+.002,"Missing measured Hall or Echo: "+JSON.stringify(result));
     await run('await until(()=>panel("B").querySelector("iframe"),"No visible official iframe");');
     const shots=path.resolve(__dirname,"../screenshots");fs.mkdirSync(shots,{recursive:true});fs.writeFileSync(path.join(shots,"local-fx-youtube.png"),(await win.webContents.capturePage()).toPNG());
-    // First try real provider playback, then exercise deterministic blocked and successful handoffs.
-    async function handoffs(){
-      await run('await load("A","aqz-KE-bpKQ");await until(()=>!by("Switch to A").disabled&&!by("Switch to B").disabled,"Players unavailable: "+panel("A").textContent.slice(-250),18000);');
-      for(const id of ["A","B","A"]){
-        await run('by("Switch to '+id+'").click();await until(()=>by("Pause deck '+id+'")&&!by("Pause deck '+(id==="A"?"B":"A")+'"),"Playback not confirmed: "+(panel("'+id+'").querySelector("[role=status]")?.textContent||"no PLAYING event"),7000);');
-      }
+    // Check the players' own reported volumes, not the state of the fader widget.
+    async function tryFade(){
+      return run(`await load("A","aqz-KE-bpKQ");
+        const get=id=>window.testPlayers?.[id] || window.YT?.get?.(panel(id).querySelector("iframe")?.id);
+        await until(()=>["A","B"].every(id=>get(id)?.getDuration?.()>0 && panel(id).textContent.includes("READY")),"Streams did not cue",20000);
+        fader(0);await play("A");await play("B");
+        const levels=()=>["A","B"].map(id=>get(id).getVolume());
+        await until(()=>levels()[0]>0&&levels()[1]===0,"A endpoint");
+        const before=levels();
+        by("Fade to B").click();
+        await until(()=>levels().every(v=>v>0),"No overlap during fade");
+        const overlap=levels();
+        await until(()=>levels()[0]===0&&levels()[1]>0,"B endpoint",5000);
+        const end=levels();if(!by("Pause deck A")||!by("Pause deck B"))throw Error("Fade interrupted playback");
+        by("Fade to A").click();await wait(350);window.dispatchEvent(new KeyboardEvent("keydown",{key:"w",bubbles:true}));
+        await wait(3100);if(document.querySelector(".console-body .cross-strip input").value!=="50"||!levels().every(v=>v>0))throw Error("Manual takeover failed");
+        return {before,overlap,end,center:levels()};`);
     }
-    try{await handoffs();console.log("LIVE: two official embeds switched both ways");}catch(e){console.log("LIVE provider unavailable:",e.message);}
+    try{console.log("LIVE official-player volume readings:",await tryFade());}catch(e){console.log("LIVE verification unavailable:",e.message);}
     await reset();
-    await run(`window.fetch=async()=>Response.json({title:"Switch fixture"});window.YT={PlayerState:{PLAYING:1,PAUSED:2,CUED:5,ENDED:0},Player:class{
-      constructor(m,{events,videoId}){this.playVideo=()=>window.blockNext?(window.blockNext=false,events.onAutoplayBlocked()):events.onStateChange({data:1});
+    await run(`window.testPlayers={};window.fetch=async()=>Response.json({title:"Fade fixture"});window.YT={PlayerState:{PLAYING:1,PAUSED:2,CUED:5,ENDED:0},Player:class{
+      constructor(frame,{events}){window.testPlayers[frame.parentElement.id.slice(-1)]=this;
+        this.playVideo=()=>window.blockNext?(window.blockNext=false,events.onAutoplayBlocked()):events.onStateChange({data:1});
         this.pauseVideo=()=>events.onStateChange({data:2});setTimeout(events.onReady,0);}
-      setVolume(){}getDuration(){return 90}getCurrentTime(){return 0}destroy(){}
+      setVolume(v){this.volume=v}getVolume(){return this.volume}getDuration(){return 90}getCurrentTime(){return 0}destroy(){}
     }};await load("B","M7lc1UVf-VE");`);
-    await handoffs();
-    await run('window.blockNext=true;by("Switch to B").click();await until(()=>panel("B").textContent.includes("Playback blocked"),"Blocked fallback");if(!by("Play deck B"))throw Error("Missing retry");by("Switch to A").click();await until(()=>by("Pause deck A"),"Resume previous");');
-    console.log("Player-event handoffs A/B/A, blocked destination, immediate previous-deck recovery passed.");
+    console.log("Deterministic volume readings:",await tryFade());
+    await run('by("Pause deck B").click();await wait(80);window.blockNext=true;by("Play deck B").click();await until(()=>panel("B").textContent.includes("Playback blocked"),"Blocked fallback");if(!by("Pause deck A")||!by("Fade to B").disabled)throw Error("Blocked destination interrupted A or enabled a fade");');
     app.exit(0);
   }catch(e){console.error(e);app.exit(1);}
 });

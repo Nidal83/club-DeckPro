@@ -1,6 +1,8 @@
 # Nidal-ClubDeck-pro
 
-Version 1.5.0 of the portable Windows DJ mixer. Mix local audio with the classic jog platters, per-deck FX and crossfader, or cue a YouTube link in its official player. The desktop version can also open YouTube's own watch page inside the mixer window. Watch-page playback uses YouTube's controls and is separate from the deck effects.
+Version 1.6.0 of the portable Windows and browser DJ mixer. Stream embeddable YouTube videos directly on the decks or mix local audio with the classic jog platters and per-deck FX.
+
+For a transition, move the crossfader to A. Load a stream on B and press Play when ready. Drag the fader toward B for a manual blend, or press **Fade B** for a three-second transition. Neither action starts or stops a deck. Touch the slider or use Q/W/A to take over a timed fade. The same fader works for local and mixed-source sets. YouTube does not expose its audio to the local FX or recorder. Videos that block embedded playback cannot stream inside the mixer.
 
 ![Classic mixer](screenshots/classic-mixer.png)
 

@@ -9,7 +9,6 @@ const distPath = path.join(appRoot, "dist");
 
 let staticServer;
 let appUrl;
-let watchSession;
 
 function startStaticServer() {
   return new Promise((resolve, reject) => {
@@ -89,7 +88,6 @@ app.whenReady().then(async () => {
   await startStaticServer();
   const prefs = path.join(app.getPath("userData"), "performance-controls.json");
   const isMixer = event => event.senderFrame?.url === appUrl + "/";
-  watchSession=require("./watch-page.cjs").installWatchPage(isMixer);
   ipcMain.on("performance-prefs:read", event => {
     try { event.returnValue = isMixer(event) ? fs.readFileSync(prefs, "utf8") : null; }
     catch { event.returnValue = null; }
@@ -111,7 +109,6 @@ app.whenReady().then(async () => {
 });
 
 app.on("web-contents-created", (_event, contents) => {
-  if(watchSession && contents.session===watchSession)return;
   contents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith(appUrl)) {
       const parsed = new URL(url);

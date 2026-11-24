@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { ExternalLink, Play } from "lucide-react";
-import { extractYouTubeVideoId, getYouTubeWatchUrl, loadYouTubeIframeApi, youtubeErrorMessage } from "../../services/youtubeService";
+import { Play } from "lucide-react";
+import { extractYouTubeVideoId, loadYouTubeIframeApi, youtubeErrorMessage } from "../../services/youtubeService";
 import { PlaylistPanel } from "./PlaylistPanel";
 
 export function LibraryDrawer({open}:{open:boolean}) {
@@ -57,7 +57,6 @@ export function LibraryDrawer({open}:{open:boolean}) {
         <div><input id="preview-link" placeholder="Paste a YouTube link" value={link} onChange={e=>setLink(e.target.value)}/>
           <button data-hint="Play this link." type="submit"><Play size={15}/> Preview</button></div>
         {error && <span role="status">{error}</span>}
-        {request && <a data-hint="Watch in your browser." href={getYouTubeWatchUrl(request.id)} target="_blank" rel="noreferrer"><ExternalLink size={14}/>Open on YouTube</a>}
       </form>
       <div ref={host} className="preview-player" aria-label="YouTube preview player"/>
     </div>

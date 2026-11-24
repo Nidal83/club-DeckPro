@@ -14,11 +14,7 @@ export function useYouTubeDeck(deckId: DeckId, elementId: string) {
   const playerRef = useRef<YouTubeDeckPlayer | null>(null);
   const outputVolumeRef = useRef(0);
   const localPath=useRef<{audio:HTMLAudioElement;channel:LiveChannel|null}|null>(null);
-  const switching=useDjStore(s=>s.decks.A.source==="youtube" || s.decks.B.source==="youtube");
-  const blend=calculateCrossfadeGain(deckId,mixer.crossfader,mixer.fadeCurve);
-  const lastBlend=useRef(blend);
-  const mixGain=switching && deck.isPlaying ? lastBlend.current : switching ? 1 : blend;
-  useEffect(()=>{lastBlend.current=mixGain;},[mixGain]);
+  const mixGain=calculateCrossfadeGain(deckId,mixer.crossfader,mixer.fadeCurve);
   useEffect(()=>()=>{localPath.current?.channel?.destroy();channels.delete(deckId);localPath.current=null;},[deckId]);
 
   const outputVolume = useMemo(() => {
@@ -35,8 +31,6 @@ export function useYouTubeDeck(deckId: DeckId, elementId: string) {
     deckId,
     mixer.channelVolumeA,
     mixer.channelVolumeB,
-    mixer.crossfader,
-    mixer.fadeCurve,
     mixer.gainA,
     mixer.gainB,
     mixer.masterVolume
@@ -151,7 +145,7 @@ export function useYouTubeDeck(deckId: DeckId, elementId: string) {
         onEnded: () => playback(false),
         onError: event => fail(youtubeErrorMessage(event.data)),
         onAutoplayBlocked: () => {
-          if (current()) useDjStore.getState().updateDeck(deckId, {isPlaying:false,error:"Playback blocked. Press Play here, or switch back to the previous deck."});
+          if (current()) useDjStore.getState().updateDeck(deckId, {isPlaying:false,error:"Playback blocked. Press Play inside this deck’s YouTube player."});
         }
       }, controller.signal).then(ready).catch(error => fail(error.message));
     }

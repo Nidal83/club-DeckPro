@@ -2,20 +2,17 @@ import { Headphones } from "lucide-react";
 import { useDjStore } from "../../store/djStore";
 import { usePreferences } from "../../store/performance";
 import { SliderControl } from "./SliderControl";
-import { deckPlayerRegistry } from "../../services/deckPlayerRegistry";
+import { fadeTo,moveFader,stopFade } from "../../services/crossfade";
 
 export function Crossfader() {
   const value = useDjStore(s=>s.mixer.crossfader);
-  const decks=useDjStore(s=>s.decks);
-  if(decks.A.source==="youtube" || decks.B.source==="youtube")return <div className="cross-strip handoff"><small>Deck switch</small><div>
-    {(["A","B"] as const).map(id=><button key={id} aria-label={`Switch to ${id}`} data-hint="Pause this deck and play the other." disabled={decks[id].status!=="ready" || decks[id].isPlaying} onClick={()=>{
-      deckPlayerRegistry.pause(id==="A"?"B":"A");
-      deckPlayerRegistry.play(id);
-    }}>Switch to {id}</button>)}</div></div>;
-  return <div className="cross-strip"><SliderControl label="Crossfader" value={value} onChange={crossfader=>useDjStore.getState().updateMixer({crossfader})}/>
-    <div className="fader-scale"><b>A</b><span>{(["Q","W","A"] as const).map((key,i)=>
-      <button data-hint={["More A.","Center.","More B."][i]} key={key} title={["Nudge left","Center crossfader","Nudge right"][i]} onClick={()=>useDjStore.getState().updateMixer({
-        crossfader:i===1?50:Math.max(0,Math.min(100,value+(i===0?-5:5)))})}>{key}</button>)}</span><b>B</b></div></div>;
+  const playingA=useDjStore(s=>s.decks.A.isPlaying),playingB=useDjStore(s=>s.decks.B.isPlaying);
+  const target=(id:"A"|"B",playing:boolean)=><button aria-label={`Fade to ${id}`} disabled={!playing}
+    data-hint={playing?"3 sec fade.":`Play ${id} first.`} onClick={()=>fadeTo(id)}>Fade {id}</button>;
+  return <div className="cross-strip" onPointerDownCapture={stopFade}><SliderControl label="Crossfader" value={value} onChange={moveFader}/>
+    <div className="fader-scale">{target("A",playingA)}<span>{(["Q","W","A"] as const).map((key,i)=>
+      <button data-hint={["More A.","Center.","More B."][i]} key={key} title={["Nudge left","Center crossfader","Nudge right"][i]} onClick={()=>moveFader(
+        i===1?50:Math.max(0,Math.min(100,value+(i===0?-5:5))))}>{key}</button>)}</span>{target("B",playingB)}</div></div>;
 }
 
 export function Mixer() {

@@ -17,7 +17,6 @@ import { usePreferences } from "../store/performance";
 import "./studio.css";
 import "./hints.css";
 import "./classic.css";
-import { WatchPanel } from "../components/dj/WatchPanel";
 
 const tabs = [["Library",Library],["Sampler",Grid2X2],["FX Navigator",SlidersHorizontal],["Tools",Wrench],["Settings",Settings]] as const;
 type Tab = (typeof tabs)[number][0];
@@ -30,7 +29,6 @@ export function DjStudio() {
   const showHints=usePreferences(s=>s.showHints);
   const large=useDjStore(s=>s.performanceMode);
   const classic=usePreferences(s=>s.classic);
-  const [watch,setWatch]=useState<{id:string;deck:string}|null>(null);
   const drawerHints={"Library":"Browse or preview tracks.","Sampler":"Play samples and sounds.","FX Navigator":"Choose effects for this deck.","Tools":"Set cues or record.","Settings":"Edit keys and outputs."};
   const toggle=(name:Tab)=>setTab(v=>v===name?null:name);
   return <main className="studio" data-classic={classic} data-drawer={!!tab} data-hints={showHints} data-performance={large}>
@@ -45,7 +43,7 @@ export function DjStudio() {
       onClick={()=>setActiveDeck(id)}><Disc3 size={14}/> {id} <span>{decks[id].isPlaying?"Playing":decks[id].status==="ready"?"Cued":"Standby"}</span></button>)}
       <div className="layout-switch" role="group" aria-label="Mixer layout">{["Classic","Compact"].map((name,i)=><button key={name} aria-pressed={classic===(i===0)} data-hint={i===0?"Show platters.":"Slim controls."} onClick={()=>usePreferences.setState({classic:i===0})}>{name}</button>)}</div></div>
     <div className="console-body">{ids.map(id=><div key={id} className="deck-slot" data-side={id==="B"?"right":"left"}
-      data-show={id==="B"||id===(active==="B"?"A":active)} data-mobile={active===id}><Deck deckId={id} toolsHost={toolsHost} onWatch={video=>setWatch({id:video,deck:id})}/></div>)}<Mixer/></div>
+      data-show={id==="B"||id===(active==="B"?"A":active)} data-mobile={active===id}><Deck deckId={id} toolsHost={toolsHost}/></div>)}<Mixer/></div>
     <div className="mobile-cross"><Crossfader/></div>
     <footer className="console-drawer">
       <nav>{tabs.map(([name,Icon])=><button data-hint={tab===name?"Tap to close.":drawerHints[name]} key={name} onClick={()=>toggle(name)} aria-expanded={tab===name} aria-controls="drawer-content"><Icon size={16}/><span>{name}</span></button>)}
@@ -58,6 +56,5 @@ export function DjStudio() {
         <div hidden={tab!=="Settings"}><LiveSettings/><div className="mobile-mixer"><Mixer/></div></div>
       </div>
     </footer>
-    {watch && <WatchPanel id={watch.id} deck={watch.deck} onClose={()=>setWatch(null)}/>}
   </main>;
 }

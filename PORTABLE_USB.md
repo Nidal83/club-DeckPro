@@ -1,7 +1,7 @@
 # Nidal-ClubDeck-pro Portable USB Build
 
 For faster USB startup, build the Windows folder edition with `npm.cmd run desktop:usb`.
-Extract `Nidal-ClubDeck-pro-USB-1.5.0.zip` once into a folder on the USB.
+Extract `Nidal-ClubDeck-pro-USB-1.6.0.zip` once into a folder on the USB.
 Launch `Nidal-ClubDeck-pro.exe` inside that folder and keep the adjacent files with it.
 This edition runs directly from the folder on each launch.
 
@@ -14,7 +14,7 @@ npm.cmd run desktop:portable
 The generated executable is written to:
 
 ```text
-C:\tmp\clubdeck-pro-release\Nidal-ClubDeck-pro-Portable-1.5.0.exe
+C:\tmp\clubdeck-pro-release\Nidal-ClubDeck-pro-Portable-1.6.0.exe
 ```
 
 ## Use

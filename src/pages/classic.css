@@ -1,10 +1,6 @@
 .layout-switch {display:flex;gap:2px;margin-left:auto}
 .studio .layout-switch button {min-width:0;font-size:11px}
 .local-fx-notice {display:flex;align-items:center;justify-content:space-between;gap:5px}
-.local-fx-notice :is(button,a),.watch-panel button {border:1px solid #455158;border-radius:4px;padding:4px 8px;color:#c2e7ff;background:#20272a}
-.watch-panel {position:fixed;z-index:20;right:8px;top:55px;bottom:60px;width:min(585px,calc(100% - 16px));display:flex;flex-direction:column;border:1px solid #637377;border-radius:5px;background:#14181b;box-shadow:0 8px 35px #000a}
-.watch-panel header {display:flex;align-items:center;justify-content:space-between;padding:5px 10px}
-.watch-panel h2 {font-size:16px;font-weight:bold}.watch-host{flex:1;min-height:0}.watch-host p{padding:16px}.watch-host a{text-decoration:underline}
 .studio[data-classic=true] .live-deck {background:linear-gradient(145deg,#23282a,#121516 65%);border-top-width:3px}
 .studio[data-classic=true] .live-mixer {border-inline:2px solid #393e40;background:#202426}
 .studio[data-classic=true] .pad-row button {border-bottom-color:var(--accent);background:linear-gradient(#303738,#222728)}

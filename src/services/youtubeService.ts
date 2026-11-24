@@ -144,7 +144,7 @@ export const fetchYouTubeTrackMeta = async (url: string): Promise<YouTubeTrackMe
   }
 
   try {
-    const response = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(url)}`);
+    const response = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(getYouTubeWatchUrl(videoId))}`);
     if (!response.ok) {
       throw new Error("Metadata unavailable.");
     }

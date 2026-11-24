@@ -69,7 +69,7 @@ async function verifyRelease() {
   Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value").set.call(link,"https://youtu.be/aaaaaaaaaaa");
   link.dispatchEvent(new Event("input",{bubbles:true}));await sleep(30);
   link.form.requestSubmit();await until(()=>previewCalls.includes("play"),"Preview did not start");
-  if(!document.querySelector(".preview-layout a")?.textContent.includes("Open on YouTube")||!document.querySelector(".preview-layout [role=status]")?.textContent.includes("150"))throw Error("Preview blocked fallback");
+  if(document.querySelector(".preview-layout a")||!document.querySelector(".preview-layout [role=status]")?.textContent.includes("150"))throw Error("Blocked preview should stay inside the mixer");
   if(document.documentElement.scrollHeight>innerHeight+1)throw Error("Page overflow with preview open");
   nav("Library").click();await until(()=>previewCalls.at(-1)==="pause","Preview continued behind drawer");
   if(!control("Pause deck A")||!control("Pause deck B"))throw Error("Preview interrupted deck transport");

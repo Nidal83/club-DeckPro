@@ -1,9 +1,9 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { ExternalLink, Link, Pause, Play, SkipBack, Zap, FolderOpen } from "lucide-react";
+import { Link, Pause, Play, SkipBack, Zap, FolderOpen } from "lucide-react";
 import { useDjStore } from "../../store/djStore";
 import type { DeckId } from "../../types/dj";
 import { useYouTubeDeck } from "../../hooks/useYouTubeDeck";
-import { extractYouTubeVideoId,getYouTubeWatchUrl } from "../../services/youtubeService";
+import { extractYouTubeVideoId } from "../../services/youtubeService";
 import { createPortal } from "react-dom";
 import { changeLive, useLive, toggleLoop, usePreferences } from "../../store/performance";
 import { QuickFx } from "./QuickFx";
@@ -16,7 +16,6 @@ import { WaveformDisplay } from "./WaveformDisplay";
 interface DeckProps {
   deckId: DeckId;
   toolsHost: HTMLElement | null;
-  onWatch:(id:string)=>void;
 }
 
 const formatTime = (seconds: number) => {
@@ -55,7 +54,7 @@ const parseTimeInput = (value: string) => {
   return null;
 };
 
-export function Deck({ deckId, toolsHost,onWatch }: DeckProps) {
+export function Deck({ deckId, toolsHost }: DeckProps) {
   const deck = useDjStore((state) => state.decks[deckId]);
   const updateDeck = useDjStore((state) => state.updateDeck);
   const loadYouTubeTrack = useDjStore((state) => state.loadYouTubeTrack);
@@ -165,7 +164,7 @@ export function Deck({ deckId, toolsHost,onWatch }: DeckProps) {
           className="min-w-0 flex-1 rounded-md border border-white/10 bg-black/45 px-3 py-2 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-sky-300"
         />
         <ControlButton data-hint="Cue this link." type="submit" label={`Load deck ${deckId}`} tone="blue">
-          <Link size={15} /> Open video
+          <Link size={15} /> Load stream
         </ControlButton>
         </>}
         <input type="file" ref={fileInput} hidden accept="audio/*,.mp3,.wav,.flac,.m4a,.ogg" onChange={event => {
@@ -194,9 +193,7 @@ export function Deck({ deckId, toolsHost,onWatch }: DeckProps) {
         {!deck.videoId && <strong>YouTube player</strong>}
       </div>
       {!youtube && <div className="scope"><WaveformDisplay deckId={deckId}/></div>}
-      {youtube ? <div className="local-fx-notice"><span>Load a local file to use FX.</span>
-        {deck.videoId && (window.youtubeWatch ? <button data-hint="Use YouTube's own controls." onClick={()=>{player.pause();onWatch(deck.videoId!);}}>Watch inside mixer</button>
-        : <a data-hint="Open the official watch page." href={getYouTubeWatchUrl(deck.videoId)} target="_blank" rel="noreferrer">Open on YouTube</a>)}</div>:<QuickFx id={deckId}/>}
+      {youtube ? <div className="local-fx-notice">Load a local file to use FX.</div>:<QuickFx id={deckId}/>}
       <div className="tempo"><SliderControl label="Tempo" min={-16} max={16} step={0.1} unit="%" value={deck.pitch} onChange={handlePitchChange}/></div>
       <div className="pads"><div className="strip-label"><strong>Performance pads</strong><div>{(["Hot Cues","Loops","FX"] as const).map(mode =>
         <button data-hint={mode==="Hot Cues"?"Use cue points.":mode==="Loops"?"Use beat loops.":"Use pinned FX."} key={mode} aria-pressed={padMode===mode} onClick={() => setPadMode(mode)}>{mode}</button>)}</div></div>
@@ -212,7 +209,7 @@ export function Deck({ deckId, toolsHost,onWatch }: DeckProps) {
         {!deck.videoId && <JogWheel deckId={deckId} disabled={!hasSource} isPlaying={deck.isPlaying} onActivate={() => setActiveDeck(deckId)} onJog={player.jog} onBackspin={player.backspin}/>}
         <div className="position"><small>Playhead</small><strong>{formatTime(deck.currentTime)}</strong><span>{deck.localFile?.name ?? (deck.videoId ? "YouTube player" : "Manual jog")}</span></div>
       </div>
-      {deck.error && <aside className="deck-error" role="status">{deck.error} {deck.videoId && <a data-hint="Watch in your browser." href={getYouTubeWatchUrl(deck.videoId)} target="_blank" rel="noreferrer"><ExternalLink size={14}/> YouTube</a>}</aside>}
+      {deck.error && <aside className="deck-error" role="status">{deck.error}</aside>}
       {focused && toolsHost && createPortal(<div className="deck-tools">
         <h3>Deck {deckId} tools</h3><label data-hint="Choose four cue pads.">Cue bank <select value={bank} onChange={e => setBank(Number(e.target.value))}><option value="0">1 - 4</option><option value="1">5 - 8</option></select></label>
         <label data-hint="Choose a length or exit.">Loop beats <select value={loop} onChange={e => toggleLoop(deckId,Number(e.target.value))}>{[0,1,2,4,8].map(n=><option key={n} value={n}>{n || "Off"}</option>)}</select></label>
